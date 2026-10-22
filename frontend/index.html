@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Diffie-Hellman Security Lab</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background-color: #1e293b; border: 1px solid #334155; color: #fff; }
+        .log-terminal { background-color: #020617; color: #22c55e; font-family: monospace; height: 180px; overflow-y: auto; padding: 10px; border-radius: 5px; }
+        .status-badge { font-size: 1rem; padding: 6px 12px; }
+    </style>
+</head>
+<body class="p-4">
+    <div class="container">
+        <h2 class="text-center mb-4 text-warning">🧪 المختبر التفاعلي لهجمات وحماية ديفي-هلمان (Diffie-Hellman Lab)</h2>
+        
+        <!-- الأزرار للتحكم بالنظام -->
+        <div class="row mb-4">
+            <div class="col text-center">
+                <button onclick="runSimulation('normal')" class="btn btn-success me-2">🟢 الوضع الطبيعي (ECDH)</button>
+                <button onclick="runSimulation('attack')" class="btn btn-danger me-2">🔴 وضع الهجوم (MitM Attack)</button>
+                <button onclick="runSimulation('defense')" class="btn btn-primary">🛡️ وضع الحماية (RSA Signatures)</button>
+            </div>
+        </div>
+
+        <!-- عرض أجهزة الشبكة -->
+        <div class="row text-center mb-4">
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h4>👩‍💻 Alice (المرسل)</h4>
+                    <p class="small text-muted" id="alice-key">Public Key: -</p>
+                    <span class="badge bg-info">Secret: <span id="alice-secret">-</span></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 border-danger">
+                    <h4 class="text-danger">🥷 Eve (المخترق)</h4>
+                    <p class="small text-muted">Status: Intercepting Network</p>
+                    <span class="badge bg-danger">Eve Secret: <span id="eve-secret">-</span></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h4>👨‍💻 Bob (المستقبل)</h4>
+                    <p class="small text-muted" id="bob-key">Public Key: -</p>
+                    <span class="badge bg-info">Secret: <span id="bob-secret">-</span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- سجل العمليات (Terminal Log) -->
+        <div class="row">
+            <div class="col">
+                <h5>📊 سجل أحداث التشفير والشبكة (Live Terminal Log):</h5>
+                <div class="log-terminal" id="terminal-log">> System initialized. Ready for simulation...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const logBox = document.getElementById("terminal-log");
+            logBox.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${data.log}`;
+            logBox.scrollTop = logBox.scrollHeight;
+
+            if (data.alice_secret) document.getElementById("alice-secret").innerText = data.alice_secret.substring(0, 16) + "...";
+            if (data.bob_secret) document.getElementById("bob-secret").innerText = data.bob_secret.substring(0, 16) + "...";
+            if (data.eve_intercept_alice) document.getElementById("eve-secret").innerText = data.eve_intercept_alice.substring(0, 16) + "...";
+        };
+
+        function runSimulation(mode) {
+            ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
+        }
+    </script>
+</body>
+</html>
