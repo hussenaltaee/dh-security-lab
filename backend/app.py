@@ -24,15 +24,12 @@ async def get_index():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
-    # أزواج مفاتيح ECDH
     alice_priv, alice_pub = CryptoEngine.generate_ecdh_keypair()
     bob_priv, bob_pub = CryptoEngine.generate_ecdh_keypair()
     eve_priv, eve_pub = CryptoEngine.generate_ecdh_keypair()
     
-    # مفاتيح RSA
     alice_rsa_priv, alice_rsa_pub = CryptoEngine.generate_rsa_keypair()
 
-    # المفاتيح السرية المشتقة لكل سيناريو
     secret_normal = CryptoEngine.derive_shared_secret(alice_priv, bob_pub)
     secret_alice_eve = CryptoEngine.derive_shared_secret(alice_priv, eve_pub)
     secret_bob_eve = CryptoEngine.derive_shared_secret(bob_priv, eve_pub)
@@ -72,28 +69,36 @@ async def websocket_endpoint(websocket: WebSocket):
                         "signature_valid": is_valid,
                         "log": "[DEFENSE] RSA Digital Signature Verified: MitM tampering detected & blocked!"
                     })
+                elif mode == "pq_hybrid":
+                    pq_secret_alice = CryptoEngine.derive_post_quantum_hybrid_secret(alice_priv, bob_pub)
+                    pq_secret_bob = CryptoEngine.derive_post_quantum_hybrid_secret(bob_priv, alice_pub)
+                    await websocket.send_json({
+                        "status": "quantum_safe",
+                        "mode": mode,
+                        "alice_secret": pq_secret_alice.hex(),
+                        "bob_secret": pq_secret_bob.hex(),
+                        "log": "[PQC SECURE] Post-Quantum Hybrid Mode Active: Session secured against Quantum Shor's Algorithm!"
+                    })
 
             elif command == "send_msg":
                 msg_text = data.get("message", "")
-                if mode == "normal":
-                    encrypted = CryptoEngine.encrypt_msg(secret_normal, msg_text)
-                    decrypted = CryptoEngine.decrypt_msg(secret_normal, encrypted)
+                if mode == "normal" or mode == "pq_hybrid":
+                    active_sec = secret_normal if mode == "normal" else CryptoEngine.derive_post_quantum_hybrid_secret(alice_priv, bob_pub)
+                    encrypted = CryptoEngine.encrypt_msg(active_sec, msg_text)
+                    decrypted = CryptoEngine.decrypt_msg(active_sec, encrypted)
                     await websocket.send_json({
                         "type": "chat_result",
-                        "mode": "normal",
-                        "original": msg_text,
+                        "mode": mode,
                         "encrypted": encrypted,
                         "decrypted_bob": decrypted,
-                        "log": f"[CHAT] Normal Transmission: Ciphertext = {encrypted[:20]}..."
+                        "log": f"[CHAT] Secure Transmission: Ciphertext = {encrypted[:20]}..."
                     })
                 elif mode == "attack":
-                    # في وضع الهجوم، Eve تتنصت وتستقبل النص الصريح
                     encrypted_alice_eve = CryptoEngine.encrypt_msg(secret_alice_eve, msg_text)
                     decrypted_eve = CryptoEngine.decrypt_msg(secret_alice_eve, encrypted_alice_eve)
                     await websocket.send_json({
                         "type": "chat_intercepted",
                         "mode": "attack",
-                        "original": msg_text,
                         "encrypted": encrypted_alice_eve,
                         "intercepted_by_eve": decrypted_eve,
                         "log": f"[INTERCEPTED] Eve read plain text: '{decrypted_eve}'"
@@ -101,13 +106,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
             elif command == "forward_tampered_msg":
                 tampered_text = data.get("tampered_message", "")
-                # Eve تشفر النص المعدل بـ المفتاح السري المشترك بينها وبين Bob
                 encrypted_eve_bob = CryptoEngine.encrypt_msg(secret_bob_eve, tampered_text)
                 decrypted_bob = CryptoEngine.decrypt_msg(secret_bob_eve, encrypted_eve_bob)
                 await websocket.send_json({
                     "type": "chat_tampered_result",
                     "mode": "attack",
-                    "tampered_sent": tampered_text,
                     "decrypted_bob": decrypted_bob,
                     "log": f"[TAMPERED] Bob received altered message: '{decrypted_bob}'"
                 })

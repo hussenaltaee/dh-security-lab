@@ -15,12 +15,13 @@
     <div class="container">
         <h2 class="text-center mb-4 text-warning">🧪 المختبر التفاعلي لهجمات وحماية ديفي-هلمان (Diffie-Hellman Lab)</h2>
         
-        <!-- أزرار الأوضاع -->
+        <!-- أزرار الأوضاع الأربعة -->
         <div class="row mb-4">
             <div class="col text-center">
-                <button onclick="setMode('normal')" class="btn btn-success me-2">🟢 الوضع الطبيعي (ECDH)</button>
-                <button onclick="setMode('attack')" class="btn btn-danger me-2">🔴 وضع الهجوم (MitM Attack)</button>
-                <button onclick="setMode('defense')" class="btn btn-primary">🛡️ وضع الحماية (RSA Signatures)</button>
+                <button onclick="setMode('normal')" class="btn btn-success me-2 mb-2">🟢 الوضع الطبيعي</button>
+                <button onclick="setMode('attack')" class="btn btn-danger me-2 mb-2">🔴 وضع الهجوم (MitM)</button>
+                <button onclick="setMode('defense')" class="btn btn-primary me-2 mb-2">🛡️ وضع الحماية (RSA)</button>
+                <button onclick="setMode('pq_hybrid')" class="btn btn-warning mb-2">⚛️ الوضع الكمومي (PQC Secure)</button>
             </div>
         </div>
 
@@ -91,7 +92,7 @@
             if (data.eve_intercept_alice) document.getElementById("eve-secret").innerText = data.eve_intercept_alice.substring(0, 12) + "...";
 
             if (data.type === "chat_result") {
-                document.getElementById("bob-chat").innerHTML += `<div class="text-success"><b>Alice:</b> ${data.decrypted_bob} <br><small class="text-muted">(Encrypted: ${data.encrypted.substring(0, 10)}...)</small></div>`;
+                document.getElementById("bob-chat").innerHTML += `<div class="text-success"><b>Alice:</b> ${data.decrypted_bob} <br><small class="text-muted">(Encrypted)</small></div>`;
             } else if (data.type === "chat_intercepted") {
                 document.getElementById("tamper-panel").style.display = "block";
                 document.getElementById("tampered-msg-input").value = data.intercepted_by_eve;

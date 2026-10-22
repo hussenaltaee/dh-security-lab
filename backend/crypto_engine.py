@@ -32,6 +32,21 @@ class CryptoEngine:
         return digest.finalize()
 
     @staticmethod
+    def derive_post_quantum_hybrid_secret(private_key, peer_public_pem_str):
+        """
+        محاكاة تشفير هجين مقاوم للحواسيب الكمومية (PQC Hybrid Key Derivation)
+        دمج ناتج ECDH مع طبقة خلط إضافية تعتمد على SHA3-512 لمحاكاة خوارزميات مثل Kyber.
+        """
+        peer_pub_bytes = peer_public_pem_str.encode('utf-8')
+        peer_public_key = serialization.load_pem_public_key(peer_pub_bytes)
+        raw_shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
+        
+        digest = hashes.Hash(hashes.SHA3_512())
+        digest.update(raw_shared_key)
+        digest.update(b"POST_QUANTUM_HYBRID_SALT_2026")
+        return digest.finalize()[:32]
+
+    @staticmethod
     def generate_rsa_keypair():
         """توليد زوج مفاتيح RSA للتوقيع الرقمي"""
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
