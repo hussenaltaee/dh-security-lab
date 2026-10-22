@@ -53,13 +53,26 @@
         <div class="row">
             <div class="col">
                 <h5>📊 سجل أحداث التشفير والشبكة (Live Terminal Log):</h5>
-                <div class="log-terminal" id="terminal-log">> System initialized. Ready for simulation...</div>
+                <div class="log-terminal" id="terminal-log">> System initialized. Connecting to server...</div>
             </div>
         </div>
     </div>
 
     <script>
-        const ws = new WebSocket(`ws://${location.host}/ws`);
+        // اختيار البروتوكول تلقائياً (wss للمواقع المشفرة على Render أو ws محلياً)
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            const logBox = document.getElementById("terminal-log");
+            logBox.innerHTML += `<br>> [SYSTEM] Connected successfully to remote cryptographic engine.`;
+        };
+
+        ws.onerror = (error) => {
+            const logBox = document.getElementById("terminal-log");
+            logBox.innerHTML += `<br><span style="color:red">> [ERROR] WebSocket connection failed. Please refresh.</span>`;
+        };
 
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
@@ -73,7 +86,11 @@
         };
 
         function runSimulation(mode) {
-            ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
+            } else {
+                alert("السيرفر يستيقظ من وضع السكون، يرجى الانتظار 10 ثوانٍ ثم إعادة المحاولة...");
+            }
         }
     </script>
 </body>
