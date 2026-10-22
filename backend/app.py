@@ -48,7 +48,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "mode": mode,
                         "alice_secret": secret_normal.hex(),
                         "bob_secret": secret_normal.hex(),
-                        "log": "[SUCCESS] Normal Exchange: Shared Secret established via ECDH."
+                        "log": "[SUCCESS] Normal Exchange / تبادل طبيعي آمن: Shared Secret established safely via ECDH."
                     })
                 elif mode == "attack":
                     await websocket.send_json({
@@ -58,7 +58,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "eve_intercept_alice": secret_alice_eve.hex(),
                         "eve_intercept_bob": secret_bob_eve.hex(),
                         "bob_secret": secret_bob_eve.hex(),
-                        "log": "[CRITICAL] MitM Attack Active: Eve intercepted keys & created 2 sub-secrets!"
+                        "log": "[CRITICAL] MitM Attack Active / هجوم الرجل في المنتصف نشط: Eve intercepted keys & created 2 sub-secrets!"
                     })
                 elif mode == "defense":
                     signature = CryptoEngine.sign_data(alice_rsa_priv, alice_pub.encode('utf-8'))
@@ -67,7 +67,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "status": "protected",
                         "mode": mode,
                         "signature_valid": is_valid,
-                        "log": "[DEFENSE] RSA Digital Signature Verified: MitM tampering detected & blocked!"
+                        "log": "[DEFENSE] RSA Signature Verified / التحقق من التوقيع الرقمي: MitM tampering detected & blocked!"
                     })
                 elif mode == "pq_hybrid":
                     pq_secret_alice = CryptoEngine.derive_post_quantum_hybrid_secret(alice_priv, bob_pub)
@@ -77,7 +77,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "mode": mode,
                         "alice_secret": pq_secret_alice.hex(),
                         "bob_secret": pq_secret_bob.hex(),
-                        "log": "[PQC SECURE] Post-Quantum Hybrid Mode Active: Session secured against Quantum Shor's Algorithm!"
+                        "log": "[PQC SECURE] Post-Quantum Hybrid / الوضع الهجين المقاوم للكم: Session secured against Shor's Algorithm!"
                     })
 
             elif command == "send_msg":
@@ -91,7 +91,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "mode": mode,
                         "encrypted": encrypted,
                         "decrypted_bob": decrypted,
-                        "log": f"[CHAT] Secure Transmission: Ciphertext = {encrypted[:20]}..."
+                        "log": f"[CHAT / دردشة آمنة]: Ciphertext transmitted & decrypted successfully."
                     })
                 elif mode == "attack":
                     encrypted_alice_eve = CryptoEngine.encrypt_msg(secret_alice_eve, msg_text)
@@ -101,7 +101,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         "mode": "attack",
                         "encrypted": encrypted_alice_eve,
                         "intercepted_by_eve": decrypted_eve,
-                        "log": f"[INTERCEPTED] Eve read plain text: '{decrypted_eve}'"
+                        "log": f"[INTERCEPTED / اعتراض]: Eve read plain text / حواء قرأت النص: '{decrypted_eve}'"
                     })
 
             elif command == "forward_tampered_msg":
@@ -112,7 +112,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "type": "chat_tampered_result",
                     "mode": "attack",
                     "decrypted_bob": decrypted_bob,
-                    "log": f"[TAMPERED] Bob received altered message: '{decrypted_bob}'"
+                    "log": f"[TAMPERED / تلاعب]: Bob received altered message / استلم رسالة معدلة: '{decrypted_bob}'"
                 })
 
     except WebSocketDisconnect:
