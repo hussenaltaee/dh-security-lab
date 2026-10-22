@@ -27,14 +27,13 @@ class CryptoEngine:
         peer_public_key = serialization.load_pem_public_key(peer_pub_bytes)
         
         raw_shared_key = private_key.exchange(ec.ECDH(), peer_public_key)
-        # نأخذ أول 32 بايت لاستخدامها كمفتاح AES-256
         digest = hashes.Hash(hashes.SHA256())
         digest.update(raw_shared_key)
         return digest.finalize()
 
     @staticmethod
     def generate_rsa_keypair():
-        """توليد زوج مفاتيح RSA للتحقق من التوقيع الرقمي ومكافحة هجوم MitM"""
+        """توليد زوج مفاتيح RSA للتوقيع الرقمي"""
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         public_key = private_key.public_key()
         return private_key, public_key
@@ -63,18 +62,21 @@ class CryptoEngine:
             return False
 
     @staticmethod
-    def encrypt_aes_gcm(key, plaintext_str):
-        """تشفير النص باستخدام AES-256-GCM"""
-        aesgcm = AESGCM(key)
+    def encrypt_msg(secret_key_bytes, plaintext_str):
+        """تشفير الرسائل عبر AES-256-GCM"""
+        aesgcm = AESGCM(secret_key_bytes)
         nonce = os.urandom(12)
         ciphertext = aesgcm.encrypt(nonce, plaintext_str.encode('utf-8'), None)
         return base64.b64encode(nonce + ciphertext).decode('utf-8')
 
     @staticmethod
-    def decrypt_aes_gcm(key, encrypted_b64):
-        """فك تشفير النص باستخدام AES-256-GCM"""
-        data = base64.b64decode(encrypted_b64)
-        nonce = data[:12]
-        ciphertext = data[12:]
-        aesgcm = AESGCM(key)
-        return aesgcm.decrypt(nonce, ciphertext, None).decode('utf-8')
+    def decrypt_msg(secret_key_bytes, encrypted_b64):
+        """فك تشفير الرسائل عبر AES-256-GCM"""
+        try:
+            data = base64.b64decode(encrypted_b64)
+            nonce = data[:12]
+            ciphertext = data[12:]
+            aesgcm = AESGCM(secret_key_bytes)
+            return aesgcm.decrypt(nonce, ciphertext, None).decode('utf-8')
+        except Exception:
+            return "[DECRYPTION FAILED / TAMPERED MESSAGE]"

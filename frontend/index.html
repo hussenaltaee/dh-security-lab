@@ -7,71 +7,77 @@
     <style>
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .card { background-color: #1e293b; border: 1px solid #334155; color: #fff; }
-        .log-terminal { background-color: #020617; color: #22c55e; font-family: monospace; height: 180px; overflow-y: auto; padding: 10px; border-radius: 5px; }
-        .status-badge { font-size: 1rem; padding: 6px 12px; }
+        .log-terminal { background-color: #020617; color: #22c55e; font-family: monospace; height: 160px; overflow-y: auto; padding: 10px; border-radius: 5px; }
+        .chat-box { background-color: #090d16; border-radius: 6px; padding: 10px; height: 120px; overflow-y: auto; font-size: 0.9rem; }
     </style>
 </head>
 <body class="p-4">
     <div class="container">
         <h2 class="text-center mb-4 text-warning">🧪 المختبر التفاعلي لهجمات وحماية ديفي-هلمان (Diffie-Hellman Lab)</h2>
         
-        <!-- الأزرار للتحكم بالنظام -->
+        <!-- أزرار الأوضاع -->
         <div class="row mb-4">
             <div class="col text-center">
-                <button onclick="runSimulation('normal')" class="btn btn-success me-2">🟢 الوضع الطبيعي (ECDH)</button>
-                <button onclick="runSimulation('attack')" class="btn btn-danger me-2">🔴 وضع الهجوم (MitM Attack)</button>
-                <button onclick="runSimulation('defense')" class="btn btn-primary">🛡️ وضع الحماية (RSA Signatures)</button>
+                <button onclick="setMode('normal')" class="btn btn-success me-2">🟢 الوضع الطبيعي (ECDH)</button>
+                <button onclick="setMode('attack')" class="btn btn-danger me-2">🔴 وضع الهجوم (MitM Attack)</button>
+                <button onclick="setMode('defense')" class="btn btn-primary">🛡️ وضع الحماية (RSA Signatures)</button>
             </div>
         </div>
 
         <!-- عرض أجهزة الشبكة -->
-        <div class="row text-center mb-4">
+        <div class="row text-center mb-3">
             <div class="col-md-4">
                 <div class="card p-3">
                     <h4>👩‍💻 Alice (المرسل)</h4>
-                    <p class="small text-muted" id="alice-key">Public Key: -</p>
-                    <span class="badge bg-info">Secret: <span id="alice-secret">-</span></span>
+                    <span class="badge bg-info mb-2">Secret: <span id="alice-secret">-</span></span>
+                    <div class="input-group mt-2">
+                        <input type="text" id="msg-input" class="form-control" placeholder="اكتب رسالة...">
+                        <button onclick="sendMsg()" class="btn btn-success">إرسال 🚀</button>
+                    </div>
                 </div>
             </div>
+
             <div class="col-md-4">
                 <div class="card p-3 border-danger">
                     <h4 class="text-danger">🥷 Eve (المخترق)</h4>
-                    <p class="small text-muted">Status: Intercepting Network</p>
-                    <span class="badge bg-danger">Eve Secret: <span id="eve-secret">-</span></span>
+                    <span class="badge bg-danger mb-2">Eve Secret: <span id="eve-secret">-</span></span>
+                    <div id="tamper-panel" style="display:none;" class="mt-2">
+                        <small class="text-warning">رسالة معترضة النص:</small>
+                        <input type="text" id="tampered-msg-input" class="form-control mb-1" value="">
+                        <button onclick="forwardTamperedMsg()" class="btn btn-warning btn-sm w-100">تعديل وإعادة توجيه لـ Bob ⚠️</button>
+                    </div>
                 </div>
             </div>
+
             <div class="col-md-4">
                 <div class="card p-3">
                     <h4>👨‍💻 Bob (المستقبل)</h4>
-                    <p class="small text-muted" id="bob-key">Public Key: -</p>
-                    <span class="badge bg-info">Secret: <span id="bob-secret">-</span></span>
+                    <span class="badge bg-info mb-2">Secret: <span id="bob-secret">-</span></span>
+                    <div class="chat-box text-start mt-2" id="bob-chat">
+                        <i class="text-muted">الرسائل المستلمة ستظهر هنا...</i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- سجل العمليات (Terminal Log) -->
+        <!-- سجل العمليات -->
         <div class="row">
             <div class="col">
                 <h5>📊 سجل أحداث التشفير والشبكة (Live Terminal Log):</h5>
-                <div class="log-terminal" id="terminal-log">> System initialized. Connecting to server...</div>
+                <div class="log-terminal" id="terminal-log">> System initialized. Ready...</div>
             </div>
         </div>
     </div>
 
     <script>
-        // اختيار البروتوكول تلقائياً (wss للمواقع المشفرة على Render أو ws محلياً)
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws`;
         const ws = new WebSocket(wsUrl);
+        let currentMode = 'normal';
 
         ws.onopen = () => {
-            const logBox = document.getElementById("terminal-log");
-            logBox.innerHTML += `<br>> [SYSTEM] Connected successfully to remote cryptographic engine.`;
-        };
-
-        ws.onerror = (error) => {
-            const logBox = document.getElementById("terminal-log");
-            logBox.innerHTML += `<br><span style="color:red">> [ERROR] WebSocket connection failed. Please refresh.</span>`;
+            document.getElementById("terminal-log").innerHTML += `<br>> [SYSTEM] Connected to Crypto Engine!`;
+            setMode('normal');
         };
 
         ws.onmessage = (event) => {
@@ -80,17 +86,37 @@
             logBox.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${data.log}`;
             logBox.scrollTop = logBox.scrollHeight;
 
-            if (data.alice_secret) document.getElementById("alice-secret").innerText = data.alice_secret.substring(0, 16) + "...";
-            if (data.bob_secret) document.getElementById("bob-secret").innerText = data.bob_secret.substring(0, 16) + "...";
-            if (data.eve_intercept_alice) document.getElementById("eve-secret").innerText = data.eve_intercept_alice.substring(0, 16) + "...";
+            if (data.alice_secret) document.getElementById("alice-secret").innerText = data.alice_secret.substring(0, 12) + "...";
+            if (data.bob_secret) document.getElementById("bob-secret").innerText = data.bob_secret.substring(0, 12) + "...";
+            if (data.eve_intercept_alice) document.getElementById("eve-secret").innerText = data.eve_intercept_alice.substring(0, 12) + "...";
+
+            if (data.type === "chat_result") {
+                document.getElementById("bob-chat").innerHTML += `<div class="text-success"><b>Alice:</b> ${data.decrypted_bob} <br><small class="text-muted">(Encrypted: ${data.encrypted.substring(0, 10)}...)</small></div>`;
+            } else if (data.type === "chat_intercepted") {
+                document.getElementById("tamper-panel").style.display = "block";
+                document.getElementById("tampered-msg-input").value = data.intercepted_by_eve;
+            } else if (data.type === "chat_tampered_result") {
+                document.getElementById("bob-chat").innerHTML += `<div class="text-danger"><b>Alice (عبر Eve):</b> ${data.decrypted_bob} ⚠️</div>`;
+            }
         };
 
-        function runSimulation(mode) {
-            if (ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
-            } else {
-                alert("السيرفر يستيقظ من وضع السكون، يرجى الانتظار 10 ثوانٍ ثم إعادة المحاولة...");
-            }
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById("tamper-panel").style.display = "none";
+            ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
+        }
+
+        function sendMsg() {
+            const msg = document.getElementById("msg-input").value;
+            if(!msg) return;
+            ws.send(JSON.stringify({ command: "send_msg", mode: currentMode, message: msg }));
+            document.getElementById("msg-input").value = "";
+        }
+
+        function forwardTamperedMsg() {
+            const tampered = document.getElementById("tampered-msg-input").value;
+            ws.send(JSON.stringify({ command: "forward_tampered_msg", mode: currentMode, tampered_message: tampered }));
+            document.getElementById("tamper-panel").style.display = "none";
         }
     </script>
 </body>
