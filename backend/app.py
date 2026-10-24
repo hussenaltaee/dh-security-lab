@@ -24,7 +24,6 @@ async def get_index():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
-    # حسين، حسن، أوس
     hussain_priv, hussain_pub = CryptoEngine.generate_ecdh_keypair()
     hasan_priv, hasan_pub = CryptoEngine.generate_ecdh_keypair()
     aws_priv, aws_pub = CryptoEngine.generate_ecdh_keypair()

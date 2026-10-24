@@ -94,6 +94,18 @@
             color: #ffffff;
             border-color: #9ca3af;
         }
+
+        .btn-demo {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .btn-demo:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+        }
     </style>
 </head>
 <body class="py-4">
@@ -106,12 +118,13 @@
             <p class="text-secondary small">Diffie-Hellman Key Exchange, MitM Attack & Defense Simulation Lab</p>
         </div>
         
-        <!-- أزرار الأوضاع الثلاثة الأساسية -->
+        <!-- أزرار الأوضاع + زر العرض التلقائي للسيناريو -->
         <div class="row mb-3">
             <div class="col text-center">
-                <button onclick="setMode('normal')" class="btn btn-slate-custom me-2 mb-2 px-4 py-2">🟢 الوضع الطبيعي <br><small class="d-block text-secondary" style="font-size:0.7rem">Normal ECDH</small></button>
-                <button onclick="setMode('attack')" class="btn btn-slate-custom me-2 mb-2 px-4 py-2">🔴 وضع الهجوم <br><small class="d-block text-secondary" style="font-size:0.7rem">MitM Attack</small></button>
-                <button onclick="setMode('defense')" class="btn btn-slate-custom mb-2 px-4 py-2">🛡️ وضع الحماية <br><small class="d-block text-secondary" style="font-size:0.7rem">RSA Defense</small></button>
+                <button onclick="setMode('normal')" class="btn btn-slate-custom me-2 mb-2 px-3 py-2">🟢 الوضع الطبيعي</button>
+                <button onclick="setMode('attack')" class="btn btn-slate-custom me-2 mb-2 px-3 py-2">🔴 وضع الهجوم (MitM)</button>
+                <button onclick="setMode('defense')" class="btn btn-slate-custom me-2 mb-2 px-3 py-2">🛡️ وضع الحماية (RSA)</button>
+                <button onclick="runAutoDemo()" class="btn btn-demo mb-2 px-4 py-2">🎬 عرض تلقائي للسيناريو (Auto Demo)</button>
             </div>
         </div>
 
@@ -123,13 +136,13 @@
                         📖 الشرح والتحليل الفوري للعملية (Live Step-by-Step Explainer):
                     </div>
                     <div class="explainer-box" id="explainer-content">
-                        جاري تهيئة النظام... يختار المستخدم وضع التشغيل لمشاهدة التحليل الرياضي والأمني هنا.
+                        جاري تهيئة النظام... انقر على "عرض تلقائي للسيناريو" لمشاهدة محاكاة العمليات أمام الحضور مباشرةً.
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- أجهزة الشبكة (حسين، أوس، حسن) -->
+        <!-- أجهزة الشبكة -->
         <div class="row text-center mb-3 g-3">
             <!-- حسين -->
             <div class="col-md-4">
@@ -173,7 +186,7 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <h6 class="text-light mb-2" style="font-size: 0.9rem;">📊 سجل أحداث الشبكة والتشفير (Terminal Logs):</h6>
-                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Stable 3-mode lab loaded. Ready...</div>
+                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Auto-Demo lab loaded. Ready...</div>
                 </div>
             </div>
         </div>
@@ -301,6 +314,40 @@
             const tampered = document.getElementById("tampered-msg-input").value;
             ws.send(JSON.stringify({ command: "forward_tampered_msg", mode: currentMode, tampered_message: tampered }));
             document.getElementById("tamper-panel").style.display = "none";
+        }
+
+        // --- دالة العرض التلقائي للسيناريو أمام الحضور ---
+        function runAutoDemo() {
+            alert("🎬 سيتم الآن بدء السيناريو التلقائي أمام الحضور خطوة بخطوة. اضغط موافق وابقى مشاهدة الشاشة!");
+            
+            // الخطوة 1: الوضع الطبيعي وإرسال رسالة آمنة
+            setMode('normal');
+            setTimeout(() => {
+                document.getElementById("msg-input").value = "أهلاً حسن، هذا اتصال آمن!";
+                sendMsg();
+            }, 2500);
+
+            // الخطوة 2: الانتقال لوضع الهجوم بعد 6 ثوانٍ
+            setTimeout(() => {
+                setMode('attack');
+            }, 6000);
+
+            // الخطوة 3: إرسال رسالة يتم اعتراضها وتعديلها من قبل أوس بعد 9 ثوانٍ
+            setTimeout(() => {
+                document.getElementById("msg-input").value = "تحويل مبلغ 500$ إلى الحساب";
+                sendMsg();
+            }, 9000);
+
+            // الخطوة 4: قيام أوس بتعديل الرسالة وإرسالها لـ حسن بعد 13 ثانية
+            setTimeout(() => {
+                document.getElementById("tampered-msg-input").value = "تحويل مبلغ 5000$ إلى حساب أوس ⚠️";
+                forwardTamperedMsg();
+            }, 13000);
+
+            // الخطوة 5: الانتقال لوضع الحماية لإحباط الهجوم بعد 18 ثانية
+            setTimeout(() => {
+                setMode('defense');
+            }, 18000);
         }
     </script>
 </body>
