@@ -45,11 +45,11 @@ async def websocket_endpoint(websocket: WebSocket):
             if command == "simulate_exchange":
                 if mode == "normal":
                     explanation = (
-                        "🟢 [شرح الوضع الطبيعي / Normal ECDH Explanation]:\n"
-                        "1. قام حسين (Hussain) وحسن (Hasan) بتوليد مفاتيح خاصة وعامة باستخدام المنحنيات البيضاوية (ECDH).\n"
-                        "2. تباردا المفاتيح العامة مباشرة عبر الشبكة.\n"
-                        "3. قام كل طرف بضرب مفتاحه الخاص في المفتاح العام للطرف الآخر لينتج 'المفتاح السري المشترك' (Shared Secret).\n"
-                        "💡 النتيجة: المفتاح متطابق تماماً عند الطرفين دون أن يتم إرساله عبر الشبكة قط!"
+                        "🟢 [سيناريو الوضع الآمن الطبيعي - Standard ECDH Mode]\n"
+                        "--------------------------------------------------\n"
+                        "• فكرة العمل: يعتمد هذا الوضع على تبادل المفاتيح عبر المنحنيات البيضاوية (ECDH) لإنشاء قناة اتصال سرية.\n"
+                        "• الآلية: يقوم كل من حسين (Hussain) وحسن (Hasan) بتوليد مفاتيح خاصة وعامة، ثم يتم حساب 'المفتاح السري المشترك' محلياً دون إرساله عبر الشبكة.\n"
+                        "• النتيجة الأمنية: تم تأسيس مفتاح تشفير متطابق بنجاح بين الطرفين مع ضمان السرية التامة."
                     )
                     await websocket.send_json({
                         "status": "success",
@@ -61,10 +61,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
                 elif mode == "attack":
                     explanation = (
-                        "🔴 [شرح هجوم الرجل في المنتصف / MitM Attack Explanation]:\n"
-                        "1. المخترق (أوس / Aws) اعترض المفاتيح العامة المتبادلة بين حسين وحسن.\n"
-                        "2. قام أوس باستبدال مفتاح حسين بمفتاحه الخاص وأرسله إلى حسن، وعكس ذلك مع حسين.\n"
-                        "💡 النتيجة: أنشأ أوس مفتاحين سريين منفصلين ($K_1$ مع حسين و $K_2$ مع حسن). حسين وحسن يظنان أنهما يتواصلان معاً، بينما أوس يفك تشفير كل رسالة ويراها بوضوح!"
+                        "🔴 [سيناريو هجوم الرجل في المنتصف - MitM Attack Simulation]\n"
+                        "----------------------------------------------------\n"
+                        "• ثغرة النظام: خوارزمية ديفي-هلمان الأساسية تفتقر للمصادقة (No Authentication).\n"
+                        "• تنفيذ الهجوم: قام المهاجم (أوس / Aws) باعتراض المفاتيح المتبادلة وإنشاء قنوات منفصلة (مفتاح مع حسين ومفتاح مع حسن).\n"
+                        "• النتيجة الأمنية: حسين وحسن يعتقدان أنهما يتواصلان معاً، بينما أوس يقرأ كل رسالة ويعترضها بحرية كاملة دون كشفه!"
                     )
                     await websocket.send_json({
                         "status": "compromised",
@@ -80,11 +81,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     signature = CryptoEngine.sign_data(hussain_rsa_priv, hussain_pub.encode('utf-8'))
                     is_valid = CryptoEngine.verify_signature(hussain_rsa_pub, signature, hussain_pub.encode('utf-8'))
                     explanation = (
-                        "🛡️ [شرح وضع الحماية والتوقيع الرقمي / RSA Defense Explanation]:\n"
-                        "1. تم دمج تبادل المفاتيح (ECDH) مع التوقيع الرقمي (RSA Digital Signatures).\n"
-                        "2. قام حسين بتوقيع مفتاحه العام بمفتاحه الخاص قبل إرساله.\n"
-                        "3. عندما استلم الطرف الآخر المفتاح، تحقق من صحة التوقيع عبر مفتاح المصادقة العام.\n"
-                        "💡 النتيجة: عندما يحاول أوس تعديل المفتاح العام في المنتصف، يفشل التحقق من التوقيع فوراً ويتم كشف الهجوم وإحباطه!"
+                        "🛡️ [سيناريو وضع الحماية والتوقيع الرقمي - RSA Signed Defense]\n"
+                        "------------------------------------------------------\n"
+                        "• آلية التصدي: دمج تبادل المفاتيح (ECDH) مع التوقيع الرقمي (RSA Digital Signatures).\n"
+                        "• خطوات الحماية: يقوم حسين بتوقيع مفتاحه العام رقمياً، ليتحقق حسن من هوية المرسل قبل اعتماده.\n"
+                        "• النتيجة الأمنية: أي محاولة تلاعب أو تعديل من قبل أوس (Aws) سيتم اكتشافها فوراً عبر فشل التحقق من التوقيع وإحباط الهجوم."
                     )
                     await websocket.send_json({
                         "status": "protected",
@@ -94,13 +95,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         "log": "[DEFENSE] RSA Signature Verified: MitM tampering detected & blocked!"
                     })
                 elif mode == "pq_hybrid":
-                    pq_secret_hussain = CryptoEngine.derive_post_quantum_hybrid_secret(hussain_priv, hasan_pub)
-                    pq_secret_hasan = CryptoEngine.derive_post_quantum_hybrid_secret(hasan_priv, hussain_pub)
                     explanation = (
-                        "⚛️ [شرح الوضع الكمومي المقاوم للهجمات / Post-Quantum Hybrid Explanation]:\n"
-                        "1. تم دمج خوارزمية المنحنيات البيضاوية (ECDH) مع طبقة خلط كمومية إضافية (SHA3-512 Hash Mixing).\n"
-                        "2. هذا يحاكي خوارزميات الحماية المستقبلية المضادة للحواسيب الكمومية وقدرتها عبر خوارزمية شور (Shor's Algorithm).\n"
-                        "💡 النتيجة: مفتاح سري محصن تماماً ضد الهجمات الكمومية المستقبلية."
+                        "⚛️ [سيناريو الوضع الهجين المقاوم للكم - Post-Quantum Hybrid PQC]\n"
+                        "----------------------------------------------------------\n"
+                        "• البعد المستقبلي: تأمين الجلسة ضد قدرات الحواسيب الكمومية القادمة (مثل خوارزمية Shor's).\n"
+                        "• الآلية: دمج ناتج المنحنيات البيضاوية مع طبقة خلط تعتمد على دمج الهاش (SHA3-512 Hash Mixing).\n"
+                        "• النتيجة الأمنية: ضمان بقاء المفتاح محصناً وصامداً حتى في عصر الحوسبة الكمومية المتطورة."
                     )
                     await websocket.send_json({
                         "status": "quantum_safe",
@@ -118,11 +118,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     encrypted = CryptoEngine.encrypt_msg(active_sec, msg_text)
                     decrypted = CryptoEngine.decrypt_msg(active_sec, encrypted)
                     explanation = (
-                        f"💬 [شرح عملية إرسال رسالة آمنة / Secure Message Flow]:\n"
-                        f"1. النص الأصلي: '{msg_text}'\n"
-                        f"2. تم تشفير النص باستخدام المفتاح السري المشترك وخوارزمية المتماثل AES-256-GCM.\n"
-                        f"3. النص المشفر العابر للشبكة: {encrypted[:25]}...\n"
-                        f"4. استلمها حسن وفك تشفيرها بنجاح دون أي تدخل خارجي."
+                        f"💬 [تحليل عملية الإرسال المشفر - Secure Messaging Flow]\n"
+                        f"----------------------------------------------------\n"
+                        f"• النص الصريح: \"{msg_text}\"\n"
+                        f"• عملية التشفير: تم استخدام خوارزمية التشفير المتماثل (AES-256-GCM) بالاعتماد على المفتاح المشترك.\n"
+                        f"• حالة الإرسال: عبر النص مشفراً عبر الشبكة (Ciphertext) واستلمه حسن وقام بفك تشفيره بنجاح تام."
                     )
                     await websocket.send_json({
                         "type": "chat_result",
@@ -136,11 +136,11 @@ async def websocket_endpoint(websocket: WebSocket):
                     encrypted_hussain_aws = CryptoEngine.encrypt_msg(secret_hussain_aws, msg_text)
                     decrypted_aws = CryptoEngine.decrypt_msg(secret_hussain_aws, encrypted_hussain_aws)
                     explanation = (
-                        f"🥷 [شرح اعتراض الرسالة بواسطة أوس / Interception Flow]:\n"
-                        f"1. أرسل حسين رسالة: '{msg_text}' مشفرة بالمفتاح المزيف ($K_1$).\n"
-                        f"2. اعترض أوس الرسالة، وفكّ تشفيرها لأنه يمتلك المفتاح السري الخاص بهذه القناة!\n"
-                        f"3. ظهر النص الصريح لدى أوس: '{decrypted_aws}'.\n"
-                        f"⚠️ تظهر الآن لوحة التعديل لأوس ليطستطيع تغيير الرسالة وإرسالها لـ حسن."
+                        f"🥷 [تحليل حالة الاعتراض البرمجي - Interception Analysis]\n"
+                        f"----------------------------------------------------\n"
+                        f"• النص المرسل من حسين: \"{msg_text}\"\n"
+                        f"• الاختراق: قام أوس (Aws) باعتراض الحزمة وفك تشفيرها لأنه طرف في هذه القناة المزيفة.\n"
+                        f"• القراءة: ظهر النص صريحاً عند أوس. الآن تظهر لوحة التعديل لتوضيح قدرة المهاجم على التلاعب بالحمولة (Payload)."
                     )
                     await websocket.send_json({
                         "type": "chat_intercepted",
@@ -156,11 +156,11 @@ async def websocket_endpoint(websocket: WebSocket):
                 encrypted_aws_hasan = CryptoEngine.encrypt_msg(secret_hasan_aws, tampered_text)
                 decrypted_hasan = CryptoEngine.decrypt_msg(secret_hasan_aws, encrypted_aws_hasan)
                 explanation = (
-                    f"⚠️ [شرح إعادة التوجيه والتلاعب بالرسالة / Tampered Forward Flow]:\n"
-                    f"1. قام أوس بتعديل النص المعترض إلى: '{tampered_text}'\n"
-                    f"2. أعاد تشفيره بمفتاحه الخاص مع حسن ($K_2$) وأرسله.\n"
-                    f"3. استلم حسن الرسالة معتقداً أنها قادمة من حسين، وفكك تشفيرها لتظهر له: '{decrypted_hasan}'!\n"
-                    f"❌ الخطر: تمت عملية الخداع بنجاح لعدم وجود مصادقة (Authentication)."
+                    f"⚠️ [تحليل التلاعب وإعادة التوجيه - Payload Tampering Analysis]\n"
+                    f"----------------------------------------------------------\n"
+                    f"• التعديل: قام أوس بتغيير محتوى الرسالة إلى: \"{tampered_text}\"\n"
+                    f"• إعادة الإرسال: قام بإعادة تشفيرها وإرسالها إلى حسن على أنها قادمة من حسين.\n"
+                    f"• النتيجة الخطيرة: استلم حسن الرسالة المعدلة وظهرت لديه دون أدنى تنبيه بسبب غياب آلية المصادقة!"
                 )
                 await websocket.send_json({
                     "type": "chat_tampered_result",
