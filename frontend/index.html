@@ -5,7 +5,6 @@
     <title>Diffie-Hellman Security Lab | المختبر الأمني المتقدم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* خلفية الصفحة الأساسية */
         body {
             background-color: #070a13;
             color: #f8fafc;
@@ -14,7 +13,6 @@
             position: relative;
         }
 
-        /* خلفية الأنيميشن السيبراني (Canvas) */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -30,7 +28,6 @@
             z-index: 2;
         }
 
-        /* تصميم البطاقات المودرن الزجاجية */
         .glass-card {
             background: rgba(30, 41, 59, 0.75);
             backdrop-filter: blur(12px);
@@ -44,7 +41,6 @@
             border-color: rgba(99, 102, 241, 0.5);
         }
 
-        /* تيرمينال السجلات */
         .log-terminal {
             background-color: rgba(2, 6, 23, 0.9);
             color: #22c55e;
@@ -57,7 +53,6 @@
             border: 1px solid #1e293b;
         }
 
-        /* صندوق الشرح الفوري */
         .explainer-box {
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid #6366f1;
@@ -95,11 +90,9 @@
 </head>
 <body class="py-4">
 
-    <!-- خلفية الأنيميشن السيبراني المتحرك -->
     <canvas id="bg-canvas"></canvas>
 
     <div class="container">
-        <!-- العنوان الرئيسي -->
         <div class="text-center mb-4">
             <h2 class="text-warning fw-bold">🧪 المختبر التفاعلي لأمن وتشفير ديفي-هلمان</h2>
             <p class="text-muted small">Diffie-Hellman Key Exchange, MitM Attack & PQC Defense Simulation Lab</p>
@@ -129,13 +122,13 @@
             </div>
         </div>
 
-        <!-- أجهزة الشبكة (Alice, Eve, Bob) -->
+        <!-- أجهزة الشبكة (حسين، أوس، حسن) -->
         <div class="row text-center mb-3 g-3">
-            <!-- Alice -->
+            <!-- حسين (بدل Alice) -->
             <div class="col-md-4">
                 <div class="glass-card p-3 h-100">
-                    <h5 class="text-white">👩‍💻 Alice <span class="bilingual">(المرسل / Sender)</span></h5>
-                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="alice-secret">-</span></span>
+                    <h5 class="text-white">🟢 حسين <span class="bilingual">(المرسل / Hussain)</span></h5>
+                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="hussain-secret">-</span></span>
                     <div class="input-group mt-2">
                         <input type="text" id="msg-input" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="اكتب رسالة...">
                         <button onclick="sendMsg()" class="btn btn-success btn-sm">إرسال 🚀</button>
@@ -143,25 +136,25 @@
                 </div>
             </div>
 
-            <!-- Eve -->
+            <!-- أوس (بدل Eve) -->
             <div class="col-md-4">
                 <div class="glass-card p-3 h-100 border-danger">
-                    <h5 class="text-danger">🥷 Eve <span class="bilingual">(المخترق / Attacker)</span></h5>
-                    <span class="badge bg-danger mb-2">Eve Key: <span id="eve-secret">-</span></span>
+                    <h5 class="text-danger">🥷 أوس <span class="bilingual">(المخترق / Aws)</span></h5>
+                    <span class="badge bg-danger mb-2">Aws Key: <span id="aws-secret">-</span></span>
                     <div id="tamper-panel" style="display:none;" class="mt-1 text-start">
                         <small class="text-warning" style="font-size: 0.75rem;">النص المعترض (Intercepted):</small>
                         <input type="text" id="tampered-msg-input" class="form-control form-control-sm bg-dark text-warning border-danger mb-1" value="">
-                        <button onclick="forwardTamperedMsg()" class="btn btn-warning btn-sm w-100 fw-bold text-dark" style="font-size: 0.75rem;">تعديل وإرسال لـ Bob ⚠️</button>
+                        <button onclick="forwardTamperedMsg()" class="btn btn-warning btn-sm w-100 fw-bold text-dark" style="font-size: 0.75rem;">تعديل وإرسال لـ حسن ⚠️</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Bob -->
+            <!-- حسن (بدل Bob) -->
             <div class="col-md-4">
                 <div class="glass-card p-3 h-100">
-                    <h5 class="text-white">👨‍💻 Bob <span class="bilingual">(المستقبل / Receiver)</span></h5>
-                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="bob-secret">-</span></span>
-                    <div class="chat-box text-start mt-2" id="bob-chat">
+                    <h5 class="text-white">🔵 حسن <span class="bilingual">(المستقبل / Hasan)</span></h5>
+                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="hasan-secret">-</span></span>
+                    <div class="chat-box text-start mt-2" id="hasan-chat">
                         <i class="text-muted" style="font-size: 0.8rem;">الرسائل المستلمة هنا...</i>
                     </div>
                 </div>
@@ -173,15 +166,13 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <h6 class="text-light mb-2" style="font-size: 0.9rem;">📊 سجل أحداث الشبكة والتشفير (Terminal Logs):</h6>
-                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Cyber background canvas loaded. Ready...</div>
+                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Names updated to Hussain, Hasan & Aws. Ready...</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- كود جافاسكريبت للخلفية المتحركة (Cyber Particle Matrix) والوظائف -->
     <script>
-        // --- خلفية الأنيميشن السيبراني (Canvas Particles) ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -236,7 +227,6 @@
                 particlesArray[i].update();
                 particlesArray[i].draw();
 
-                // ربط الخطوط بين الجسيمات القريبة لإعطاء تأثير شبكة أمنية
                 for (let j = i; j < particlesArray.length; j++) {
                     const dx = particlesArray[i].x - particlesArray[j].x;
                     const dy = particlesArray[i].y - particlesArray[j].y;
@@ -253,7 +243,6 @@
         }
         animateParticles();
 
-        // --- منطق الـ WebSocket والتحكم بالمشروع ---
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/ws`;
         const ws = new WebSocket(wsUrl);
@@ -274,17 +263,17 @@
                 document.getElementById("explainer-content").innerText = data.explanation;
             }
 
-            if (data.alice_secret) document.getElementById("alice-secret").innerText = data.alice_secret.substring(0, 10) + "...";
-            if (data.bob_secret) document.getElementById("bob-secret").innerText = data.bob_secret.substring(0, 10) + "...";
-            if (data.eve_intercept_alice) document.getElementById("eve-secret").innerText = data.eve_intercept_alice.substring(0, 10) + "...";
+            if (data.hussain_secret) document.getElementById("hussain-secret").innerText = data.hussain_secret.substring(0, 10) + "...";
+            if (data.hasan_secret) document.getElementById("hasan-secret").innerText = data.hasan_secret.substring(0, 10) + "...";
+            if (data.aws_intercept_hussain) document.getElementById("aws-secret").innerText = data.aws_intercept_hussain.substring(0, 10) + "...";
 
             if (data.type === "chat_result") {
-                document.getElementById("bob-chat").innerHTML += `<div class="text-success" style="font-size:0.8rem;"><b>Alice:</b> ${data.decrypted_bob} <br><small class="text-muted">(AES-GCM)</small></div>`;
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-success" style="font-size:0.8rem;"><b>حسين:</b> ${data.decrypted_hasan} <br><small class="text-muted">(AES-GCM)</small></div>`;
             } else if (data.type === "chat_intercepted") {
                 document.getElementById("tamper-panel").style.display = "block";
-                document.getElementById("tampered-msg-input").value = data.intercepted_by_eve;
+                document.getElementById("tampered-msg-input").value = data.intercepted_by_aws;
             } else if (data.type === "chat_tampered_result") {
-                document.getElementById("bob-chat").innerHTML += `<div class="text-danger" style="font-size:0.8rem;"><b>Alice (عبر المخترق):</b> ${data.decrypted_bob} ⚠️</div>`;
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-danger" style="font-size:0.8rem;"><b>حسين (عبر أوس ⚠️):</b> ${data.decrypted_hasan}</div>`;
             }
         };
 

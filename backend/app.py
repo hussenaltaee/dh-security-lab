@@ -24,15 +24,16 @@ async def get_index():
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
-    alice_priv, alice_pub = CryptoEngine.generate_ecdh_keypair()
-    bob_priv, bob_pub = CryptoEngine.generate_ecdh_keypair()
-    eve_priv, eve_pub = CryptoEngine.generate_ecdh_keypair()
+    # حسين، حسن، أوس
+    hussain_priv, hussain_pub = CryptoEngine.generate_ecdh_keypair()
+    hasan_priv, hasan_pub = CryptoEngine.generate_ecdh_keypair()
+    aws_priv, aws_pub = CryptoEngine.generate_ecdh_keypair()
     
-    alice_rsa_priv, alice_rsa_pub = CryptoEngine.generate_rsa_keypair()
+    hussain_rsa_priv, hussain_rsa_pub = CryptoEngine.generate_rsa_keypair()
 
-    secret_normal = CryptoEngine.derive_shared_secret(alice_priv, bob_pub)
-    secret_alice_eve = CryptoEngine.derive_shared_secret(alice_priv, eve_pub)
-    secret_bob_eve = CryptoEngine.derive_shared_secret(bob_priv, eve_pub)
+    secret_normal = CryptoEngine.derive_shared_secret(hussain_priv, hasan_pub)
+    secret_hussain_aws = CryptoEngine.derive_shared_secret(hussain_priv, aws_pub)
+    secret_hasan_aws = CryptoEngine.derive_shared_secret(hasan_priv, aws_pub)
     
     try:
         while True:
@@ -45,7 +46,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 if mode == "normal":
                     explanation = (
                         "🟢 [شرح الوضع الطبيعي / Normal ECDH Explanation]:\n"
-                        "1. قام أحمد (Alice) وسارة (Bob) بتوليد مفاتيح خاصة وعامة باستخدام المنحنيات البيضاوية (ECDH).\n"
+                        "1. قام حسين (Hussain) وحسن (Hasan) بتوليد مفاتيح خاصة وعامة باستخدام المنحنيات البيضاوية (ECDH).\n"
                         "2. تباردا المفاتيح العامة مباشرة عبر الشبكة.\n"
                         "3. قام كل طرف بضرب مفتاحه الخاص في المفتاح العام للطرف الآخر لينتج 'المفتاح السري المشترك' (Shared Secret).\n"
                         "💡 النتيجة: المفتاح متطابق تماماً عند الطرفين دون أن يتم إرساله عبر الشبكة قط!"
@@ -53,37 +54,37 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json({
                         "status": "success",
                         "mode": mode,
-                        "alice_secret": secret_normal.hex(),
-                        "bob_secret": secret_normal.hex(),
+                        "hussain_secret": secret_normal.hex(),
+                        "hasan_secret": secret_normal.hex(),
                         "explanation": explanation,
                         "log": "[SUCCESS] Normal Exchange established safely via ECDH."
                     })
                 elif mode == "attack":
                     explanation = (
                         "🔴 [شرح هجوم الرجل في المنتصف / MitM Attack Explanation]:\n"
-                        "1. المخترق (Eve) اعترض المفاتيح العامة المتبادلة بين أحمد وسارة.\n"
-                        "2. قامت حواء باستبدال مفتاح أحمد بمفتاحها الخاص وأرسلته إلى سارة، وعكس ذلك مع أحمد.\n"
-                        "💡 النتيجة: أنشأت حواء مفتاحين سريين منفصلين ($K_1$ مع أحمد و $K_2$ مع سارة). أحمد وسارة يظنان أنهما يتواصلان معاً، بينما حواء تفك تشفير كل رسالة وتراها بوضوح!"
+                        "1. المخترق (أوس / Aws) اعترض المفاتيح العامة المتبادلة بين حسين وحسن.\n"
+                        "2. قام أوس باستبدال مفتاح حسين بمفتاحه الخاص وأرسله إلى حسن، وعكس ذلك مع حسين.\n"
+                        "💡 النتيجة: أنشأ أوس مفتاحين سريين منفصلين ($K_1$ مع حسين و $K_2$ مع حسن). حسين وحسن يظنان أنهما يتواصلان معاً، بينما أوس يفك تشفير كل رسالة ويراها بوضوح!"
                     )
                     await websocket.send_json({
                         "status": "compromised",
                         "mode": mode,
-                        "alice_secret": secret_alice_eve.hex(),
-                        "eve_intercept_alice": secret_alice_eve.hex(),
-                        "eve_intercept_bob": secret_bob_eve.hex(),
-                        "bob_secret": secret_bob_eve.hex(),
+                        "hussain_secret": secret_hussain_aws.hex(),
+                        "aws_intercept_hussain": secret_hussain_aws.hex(),
+                        "aws_intercept_hasan": secret_hasan_aws.hex(),
+                        "hasan_secret": secret_hasan_aws.hex(),
                         "explanation": explanation,
-                        "log": "[CRITICAL] MitM Attack Active: Eve intercepted keys and created 2 sub-secrets!"
+                        "log": "[CRITICAL] MitM Attack Active: Aws intercepted keys and created 2 sub-secrets!"
                     })
                 elif mode == "defense":
-                    signature = CryptoEngine.sign_data(alice_rsa_priv, alice_pub.encode('utf-8'))
-                    is_valid = CryptoEngine.verify_signature(alice_rsa_pub, signature, alice_pub.encode('utf-8'))
+                    signature = CryptoEngine.sign_data(hussain_rsa_priv, hussain_pub.encode('utf-8'))
+                    is_valid = CryptoEngine.verify_signature(hussain_rsa_pub, signature, hussain_pub.encode('utf-8'))
                     explanation = (
                         "🛡️ [شرح وضع الحماية والتوقيع الرقمي / RSA Defense Explanation]:\n"
                         "1. تم دمج تبادل المفاتيح (ECDH) مع التوقيع الرقمي (RSA Digital Signatures).\n"
-                        "2. قام أحمد بتوقيع مفتاحه العام بمفتاحه الخاص قبل إرساله.\n"
+                        "2. قام حسين بتوقيع مفتاحه العام بمفتاحه الخاص قبل إرساله.\n"
                         "3. عندما استلم الطرف الآخر المفتاح، تحقق من صحة التوقيع عبر مفتاح المصادقة العام.\n"
-                        "💡 النتيجة: عندما تحاول حواء تعديل المفتاح العام في المنتصف، يفشل التحقق من التوقيع فوراً ويتم كشف الهجوم وإحباطه!"
+                        "💡 النتيجة: عندما يحاول أوس تعديل المفتاح العام في المنتصف، يفشل التحقق من التوقيع فوراً ويتم كشف الهجوم وإحباطه!"
                     )
                     await websocket.send_json({
                         "status": "protected",
@@ -93,8 +94,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         "log": "[DEFENSE] RSA Signature Verified: MitM tampering detected & blocked!"
                     })
                 elif mode == "pq_hybrid":
-                    pq_secret_alice = CryptoEngine.derive_post_quantum_hybrid_secret(alice_priv, bob_pub)
-                    pq_secret_bob = CryptoEngine.derive_post_quantum_hybrid_secret(bob_priv, alice_pub)
+                    pq_secret_hussain = CryptoEngine.derive_post_quantum_hybrid_secret(hussain_priv, hasan_pub)
+                    pq_secret_hasan = CryptoEngine.derive_post_quantum_hybrid_secret(hasan_priv, hussain_pub)
                     explanation = (
                         "⚛️ [شرح الوضع الكمومي المقاوم للهجمات / Post-Quantum Hybrid Explanation]:\n"
                         "1. تم دمج خوارزمية المنحنيات البيضاوية (ECDH) مع طبقة خلط كمومية إضافية (SHA3-512 Hash Mixing).\n"
@@ -104,8 +105,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     await websocket.send_json({
                         "status": "quantum_safe",
                         "mode": mode,
-                        "alice_secret": pq_secret_alice.hex(),
-                        "bob_secret": pq_secret_bob.hex(),
+                        "hussain_secret": pq_secret_hussain.hex(),
+                        "hasan_secret": pq_secret_hasan.hex(),
                         "explanation": explanation,
                         "log": "[PQC SECURE] Post-Quantum Hybrid Mode Active: Secured against Shor's Algorithm!"
                     })
@@ -113,7 +114,7 @@ async def websocket_endpoint(websocket: WebSocket):
             elif command == "send_msg":
                 msg_text = data.get("message", "")
                 if mode == "normal" or mode == "pq_hybrid":
-                    active_sec = secret_normal if mode == "normal" else CryptoEngine.derive_post_quantum_hybrid_secret(alice_priv, bob_pub)
+                    active_sec = secret_normal if mode == "normal" else CryptoEngine.derive_post_quantum_hybrid_secret(hussain_priv, hasan_pub)
                     encrypted = CryptoEngine.encrypt_msg(active_sec, msg_text)
                     decrypted = CryptoEngine.decrypt_msg(active_sec, encrypted)
                     explanation = (
@@ -121,52 +122,52 @@ async def websocket_endpoint(websocket: WebSocket):
                         f"1. النص الأصلي: '{msg_text}'\n"
                         f"2. تم تشفير النص باستخدام المفتاح السري المشترك وخوارزمية المتماثل AES-256-GCM.\n"
                         f"3. النص المشفر العابر للشبكة: {encrypted[:25]}...\n"
-                        f"4. استلمها سارة وفك تشفيرها بنجاح دون أي تدخل خارجي."
+                        f"4. استلمها حسن وفك تشفيرها بنجاح دون أي تدخل خارجي."
                     )
                     await websocket.send_json({
                         "type": "chat_result",
                         "mode": mode,
                         "encrypted": encrypted,
-                        "decrypted_bob": decrypted,
+                        "decrypted_hasan": decrypted,
                         "explanation": explanation,
                         "log": "[CHAT] Secure Transmission & AES-256-GCM Decryption successful."
                     })
                 elif mode == "attack":
-                    encrypted_alice_eve = CryptoEngine.encrypt_msg(secret_alice_eve, msg_text)
-                    decrypted_eve = CryptoEngine.decrypt_msg(secret_alice_eve, encrypted_alice_eve)
+                    encrypted_hussain_aws = CryptoEngine.encrypt_msg(secret_hussain_aws, msg_text)
+                    decrypted_aws = CryptoEngine.decrypt_msg(secret_hussain_aws, encrypted_hussain_aws)
                     explanation = (
-                        f"🥷 [شرح اعتراض الرسالة بواسطة حواء / Interception Flow]:\n"
-                        f"1. أرسل أحمد رسالة: '{msg_text}' مشفرة بالمفتاح المزيف ($K_1$).\n"
-                        f"2. اعترضت حواء الرسالة، وفكّت تشفيرها لأنها تمتلك المفتاح السري الخاص بهذه القناة!\n"
-                        f"3. ظهر النص الصريح لدى حواء: '{decrypted_eve}'.\n"
-                        f"⚠️ تظهر الآن لوحة التعديل لحواء لتستطيع تغيير الرسالة وإرسالها لـ سارة."
+                        f"🥷 [شرح اعتراض الرسالة بواسطة أوس / Interception Flow]:\n"
+                        f"1. أرسل حسين رسالة: '{msg_text}' مشفرة بالمفتاح المزيف ($K_1$).\n"
+                        f"2. اعترض أوس الرسالة، وفكّ تشفيرها لأنه يمتلك المفتاح السري الخاص بهذه القناة!\n"
+                        f"3. ظهر النص الصريح لدى أوس: '{decrypted_aws}'.\n"
+                        f"⚠️ تظهر الآن لوحة التعديل لأوس ليطستطيع تغيير الرسالة وإرسالها لـ حسن."
                     )
                     await websocket.send_json({
                         "type": "chat_intercepted",
                         "mode": "attack",
-                        "encrypted": encrypted_alice_eve,
-                        "intercepted_by_eve": decrypted_eve,
+                        "encrypted": encrypted_hussain_aws,
+                        "intercepted_by_aws": decrypted_aws,
                         "explanation": explanation,
-                        "log": f"[INTERCEPTED] Eve intercepted and read plaintext: '{decrypted_eve}'"
+                        "log": f"[INTERCEPTED] Aws intercepted and read plaintext: '{decrypted_aws}'"
                     })
 
             elif command == "forward_tampered_msg":
                 tampered_text = data.get("tampered_message", "")
-                encrypted_eve_bob = CryptoEngine.encrypt_msg(secret_bob_eve, tampered_text)
-                decrypted_bob = CryptoEngine.decrypt_msg(secret_bob_eve, encrypted_eve_bob)
+                encrypted_aws_hasan = CryptoEngine.encrypt_msg(secret_hasan_aws, tampered_text)
+                decrypted_hasan = CryptoEngine.decrypt_msg(secret_hasan_aws, encrypted_aws_hasan)
                 explanation = (
                     f"⚠️ [شرح إعادة التوجيه والتلاعب بالرسالة / Tampered Forward Flow]:\n"
-                    f"1. قامت حواء بتعديل النص المعترض إلى: '{tampered_text}'\n"
-                    f"2. أعادت تشفيره بمفتاحها الخاص مع سارة ($K_2$) وأرسلته.\n"
-                    f"3. استلمت سارة الرسالة معتقدة أنها قادمة من أحمد، وفككت تشفيرها لتظهر لها: '{decrypted_bob}'!\n"
+                    f"1. قام أوس بتعديل النص المعترض إلى: '{tampered_text}'\n"
+                    f"2. أعاد تشفيره بمفتاحه الخاص مع حسن ($K_2$) وأرسله.\n"
+                    f"3. استلم حسن الرسالة معتقداً أنها قادمة من حسين، وفكك تشفيرها لتظهر له: '{decrypted_hasan}'!\n"
                     f"❌ الخطر: تمت عملية الخداع بنجاح لعدم وجود مصادقة (Authentication)."
                 )
                 await websocket.send_json({
                     "type": "chat_tampered_result",
                     "mode": mode,
-                    "decrypted_bob": decrypted_bob,
+                    "decrypted_hasan": decrypted_hasan,
                     "explanation": explanation,
-                    "log": f"[TAMPERED] Bob received altered message: '{decrypted_bob}' without knowing!"
+                    "log": f"[TAMPERED] Hasan received altered message: '{decrypted_hasan}' without knowing!"
                 })
 
     except WebSocketDisconnect:
