@@ -94,29 +94,12 @@ async def websocket_endpoint(websocket: WebSocket):
                         "explanation": explanation,
                         "log": "[DEFENSE] RSA Signature Verified: MitM tampering detected & blocked!"
                     })
-                elif mode == "pq_hybrid":
-                    explanation = (
-                        "⚛️ [سيناريو الوضع الهجين المقاوم للكم - Post-Quantum Hybrid PQC]\n"
-                        "----------------------------------------------------------\n"
-                        "• البعد المستقبلي: تأمين الجلسة ضد قدرات الحواسيب الكمومية القادمة (مثل خوارزمية Shor's).\n"
-                        "• الآلية: دمج ناتج المنحنيات البيضاوية مع طبقة خلط تعتمد على دمج الهاش (SHA3-512 Hash Mixing).\n"
-                        "• النتيجة الأمنية: ضمان بقاء المفتاح محصناً وصامداً حتى في عصر الحوسبة الكمومية المتطورة."
-                    )
-                    await websocket.send_json({
-                        "status": "quantum_safe",
-                        "mode": mode,
-                        "hussain_secret": pq_secret_hussain.hex(),
-                        "hasan_secret": pq_secret_hasan.hex(),
-                        "explanation": explanation,
-                        "log": "[PQC SECURE] Post-Quantum Hybrid Mode Active: Secured against Shor's Algorithm!"
-                    })
 
             elif command == "send_msg":
                 msg_text = data.get("message", "")
-                if mode == "normal" or mode == "pq_hybrid":
-                    active_sec = secret_normal if mode == "normal" else CryptoEngine.derive_post_quantum_hybrid_secret(hussain_priv, hasan_pub)
-                    encrypted = CryptoEngine.encrypt_msg(active_sec, msg_text)
-                    decrypted = CryptoEngine.decrypt_msg(active_sec, encrypted)
+                if mode == "normal":
+                    encrypted = CryptoEngine.encrypt_msg(secret_normal, msg_text)
+                    decrypted = CryptoEngine.decrypt_msg(secret_normal, encrypted)
                     explanation = (
                         f"💬 [تحليل عملية الإرسال المشفر - Secure Messaging Flow]\n"
                         f"----------------------------------------------------\n"

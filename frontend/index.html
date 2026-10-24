@@ -5,7 +5,6 @@
     <title>Diffie-Hellman Security Lab | المختبر الأمني المتقدم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* خلفية الصفحة الأساسية باللون الأسود الداكن */
         body {
             background-color: #0b0f19;
             color: #e2e8f0;
@@ -14,7 +13,6 @@
             position: relative;
         }
 
-        /* خلفية الأنيميشن السيبراني بلون رصاصي متناسق */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -30,7 +28,6 @@
             z-index: 2;
         }
 
-        /* تصميم البطاقات بزجاج رمادي/رصاصي داكن */
         .glass-card {
             background: rgba(17, 24, 39, 0.85);
             backdrop-filter: blur(12px);
@@ -44,7 +41,6 @@
             border-color: rgba(156, 163, 175, 0.6);
         }
 
-        /* تيرمينال السجلات بلون أسود فحمي */
         .log-terminal {
             background-color: #030712;
             color: #38bdf8;
@@ -57,7 +53,6 @@
             border: 1px solid #1f2937;
         }
 
-        /* صندوق الشرح الفوري */
         .explainer-box {
             background: #0f172a;
             border: 1px solid #475569;
@@ -86,7 +81,6 @@
             display: block;
         }
 
-        /* أزرار مخصصة بدرجات الرصاصي والفحمي */
         .btn-slate-custom {
             background-color: #1f2937;
             color: #f3f4f6;
@@ -100,11 +94,6 @@
             color: #ffffff;
             border-color: #9ca3af;
         }
-
-        .btn-active-mode {
-            background-color: #4b5563 !important;
-            border-color: #e5e7eb !important;
-        }
     </style>
 </head>
 <body class="py-4">
@@ -112,19 +101,17 @@
     <canvas id="bg-canvas"></canvas>
 
     <div class="container">
-        <!-- العنوان الرئيسي -->
         <div class="text-center mb-4">
             <h2 class="text-light fw-bold">🧪 المختبر التفاعلي لأمن وتشفير ديفي-هلمان</h2>
-            <p class="text-secondary small">Diffie-Hellman Key Exchange, MitM Attack & PQC Defense Simulation Lab</p>
+            <p class="text-secondary small">Diffie-Hellman Key Exchange, MitM Attack & Defense Simulation Lab</p>
         </div>
         
-        <!-- أزرار الأوضاع بتصميم رصاصي متناسق -->
+        <!-- أزرار الأوضاع الثلاثة الأساسية -->
         <div class="row mb-3">
             <div class="col text-center">
-                <button onclick="setMode('normal')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🟢 الوضع الطبيعي <br><small class="d-block text-secondary" style="font-size:0.7rem">Normal ECDH</small></button>
-                <button onclick="setMode('attack')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🔴 وضع الهجوم <br><small class="d-block text-secondary" style="font-size:0.7rem">MitM Attack</small></button>
-                <button onclick="setMode('defense')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🛡️ وضع الحماية <br><small class="d-block text-secondary" style="font-size:0.7rem">RSA Defense</small></button>
-                <button onclick="setMode('pq_hybrid')" class="btn btn-slate-custom mb-2 px-3 py-2">⚛️ الوضع الكمومي <br><small class="d-block text-secondary" style="font-size:0.7rem">Post-Quantum</small></button>
+                <button onclick="setMode('normal')" class="btn btn-slate-custom me-2 mb-2 px-4 py-2">🟢 الوضع الطبيعي <br><small class="d-block text-secondary" style="font-size:0.7rem">Normal ECDH</small></button>
+                <button onclick="setMode('attack')" class="btn btn-slate-custom me-2 mb-2 px-4 py-2">🔴 وضع الهجوم <br><small class="d-block text-secondary" style="font-size:0.7rem">MitM Attack</small></button>
+                <button onclick="setMode('defense')" class="btn btn-slate-custom mb-2 px-4 py-2">🛡️ وضع الحماية <br><small class="d-block text-secondary" style="font-size:0.7rem">RSA Defense</small></button>
             </div>
         </div>
 
@@ -186,14 +173,13 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <h6 class="text-light mb-2" style="font-size: 0.9rem;">📊 سجل أحداث الشبكة والتشفير (Terminal Logs):</h6>
-                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Black & Slate theme loaded. Ready...</div>
+                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Stable 3-mode lab loaded. Ready...</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // خلفية أنيميشن الجسيمات بدرجات رصاصية وفحمية متناسقة
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
