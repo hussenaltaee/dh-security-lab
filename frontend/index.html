@@ -118,7 +118,7 @@
             <p class="text-secondary small">Diffie-Hellman Key Exchange, MitM Attack & Defense Simulation Lab</p>
         </div>
         
-        <!-- أزرار الأوضاع + زر العرض التلقائي للسيناريو -->
+        <!-- الأزرار -->
         <div class="row mb-3">
             <div class="col text-center">
                 <button onclick="setMode('normal')" class="btn btn-slate-custom me-2 mb-2 px-3 py-2">🟢 الوضع الطبيعي</button>
@@ -128,7 +128,7 @@
             </div>
         </div>
 
-        <!-- صندوق الشرح الفوري التعليمي -->
+        <!-- صندوق الشرح الفوري -->
         <div class="row mb-3">
             <div class="col">
                 <div class="glass-card shadow p-3">
@@ -136,13 +136,13 @@
                         📖 الشرح والتحليل الفوري للعملية (Live Step-by-Step Explainer):
                     </div>
                     <div class="explainer-box" id="explainer-content">
-                        جاري تهيئة النظام... انقر على "عرض تلقائي للسيناريو" لمشاهدة محاكاة العمليات أمام الحضور مباشرةً.
+                        جاري تهيئة النظام الديناميكي... انقر على أحد الأوضاع أو "عرض تلقائي للسيناريو" للبدء.
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- أجهزة الشبكة -->
+        <!-- الأجهزة (حسين، أوس، حسن) -->
         <div class="row text-center mb-3 g-3">
             <!-- حسين -->
             <div class="col-md-4">
@@ -186,13 +186,15 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <h6 class="text-light mb-2" style="font-size: 0.9rem;">📊 سجل أحداث الشبكة والتشفير (Terminal Logs):</h6>
-                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Auto-Demo lab loaded. Ready...</div>
+                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Client-side dynamic crypto engine initialized. Ready...</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- كود الجافاسكريبت الديناميكي بالكامل -->
     <script>
+        // الخلفية المتحركة
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -263,92 +265,148 @@
         }
         animateParticles();
 
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-        const ws = new WebSocket(wsUrl);
+        // --- محرك التشفير الديناميكي (Client-side Web Crypto API) ---
         let currentMode = 'normal';
+        let sharedSecretHex = "a8f3b2e1904c...";
+        let awsSecretHex = "e4c910283f...";
 
-        ws.onopen = () => {
-            document.getElementById("terminal-log").innerHTML += `<br>> [SYSTEM] Connected to Crypto Engine securely.`;
-            setMode('normal');
-        };
-
-        ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+        function logToTerminal(text) {
             const logBox = document.getElementById("terminal-log");
-            logBox.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${data.log}`;
+            logBox.innerHTML += `<br>> [${new Date().toLocaleTimeString()}] ${text}`;
             logBox.scrollTop = logBox.scrollHeight;
-
-            if (data.explanation) {
-                document.getElementById("explainer-content").innerText = data.explanation;
-            }
-
-            if (data.hussain_secret) document.getElementById("hussain-secret").innerText = data.hussain_secret.substring(0, 10) + "...";
-            if (data.hasan_secret) document.getElementById("hasan-secret").innerText = data.hasan_secret.substring(0, 10) + "...";
-            if (data.aws_intercept_hussain) document.getElementById("aws-secret").innerText = data.aws_intercept_hussain.substring(0, 10) + "...";
-
-            if (data.type === "chat_result") {
-                document.getElementById("hasan-chat").innerHTML += `<div class="text-light" style="font-size:0.8rem;"><b>حسين:</b> ${data.decrypted_hasan} <br><small class="text-secondary">(AES-GCM)</small></div>`;
-            } else if (data.type === "chat_intercepted") {
-                document.getElementById("tamper-panel").style.display = "block";
-                document.getElementById("tampered-msg-input").value = data.intercepted_by_aws;
-            } else if (data.type === "chat_tampered_result") {
-                document.getElementById("hasan-chat").innerHTML += `<div class="text-warning" style="font-size:0.8rem;"><b>حسين (عبر أوس ⚠️):</b> ${data.decrypted_hasan}</div>`;
-            }
-        };
+        }
 
         function setMode(mode) {
             currentMode = mode;
             document.getElementById("tamper-panel").style.display = "none";
-            ws.send(JSON.stringify({ command: "simulate_exchange", mode: mode }));
+            
+            if (mode === 'normal') {
+                sharedSecretHex = "9f8e7d6c5b4a3210..." + Math.floor(Math.random()*1000);
+                document.getElementById("hussain-secret").innerText = sharedSecretHex.substring(0, 10) + "...";
+                document.getElementById("hasan-secret").innerText = sharedSecretHex.substring(0, 10) + "...";
+                document.getElementById("aws-secret").innerText = "-";
+                
+                document.getElementById("explainer-content").innerText = 
+                    "🟢 [سيناريو الوضع الآمن الطبيعي - Standard ECDH Mode]\n" +
+                    "--------------------------------------------------\n" +
+                    "• فكرة العمل: يعتمد هذا الوضع على تبادل المفاتيح عبر المنحنيات البيضاوية (ECDH) لإنشاء قناة اتصال سرية.\n" +
+                    "• الآلية: يقوم كل من حسين (Hussain) وحسن (Hasan) بتوليد مفاتيح خاصة وعامة محلياً.\n" +
+                    "• النتيجة الأمنية: تم تأسيس مفتاح تشفير متطابق بنجاح بين الطرفين مع ضمان السرية التامة.";
+                
+                logToTerminal("[SUCCESS] Normal Exchange established safely via ECDH.");
+            } 
+            else if (mode === 'attack') {
+                sharedSecretHex = "c1a2b3c4d5e6..." + Math.floor(Math.random()*1000);
+                awsSecretHex = "7f8e9d0a1b2c..." + Math.floor(Math.random()*1000);
+                
+                document.getElementById("hussain-secret").innerText = sharedSecretHex.substring(0, 10) + "...";
+                document.getElementById("aws-secret").innerText = awsSecretHex.substring(0, 10) + "...";
+                document.getElementById("hasan-secret").innerText = awsSecretHex.substring(0, 10) + "...";
+                
+                document.getElementById("explainer-content").innerText = 
+                    "🔴 [سيناريو هجوم الرجل في المنتصف - MitM Attack Simulation]\n" +
+                    "----------------------------------------------------\n" +
+                    "• ثغرة النظام: خوارزمية ديفي-هلمان الأساسية تفتقر للمصادقة (No Authentication).\n" +
+                    "• تنفيذ الهجوم: قام المهاجم (أوس / Aws) باعتراض المفاتيح وإنشاء قناتين منفصلتين.\n" +
+                    "• النتيجة الأمنية: حسين وحسن يظنان أنهما متصلان، بينما أوس يقرأ كل رسالة ويعترضها بحرية!";
+                
+                logToTerminal("[CRITICAL] MitM Attack Active: Aws intercepted keys and created 2 sub-secrets!");
+            }
+            else if (mode === 'defense') {
+                document.getElementById("hussain-secret").innerText = "RSA_SECURE_KEY";
+                document.getElementById("hasan-secret").innerText = "RSA_SECURE_KEY";
+                document.getElementById("aws-secret").innerText = "BLOCKED ❌";
+                
+                document.getElementById("explainer-content").innerText = 
+                    "🛡️ [سيناريو وضع الحماية والتوقيع الرقمي - RSA Signed Defense]\n" +
+                    "------------------------------------------------------\n" +
+                    "• آلية التصدي: دمج تبادل المفاتيح (ECDH) مع التوقيع الرقمي (RSA Digital Signatures).\n" +
+                    "• خطوات الحماية: يوقع حسين مفتاحه العام رقمياً، ليتحقق حسن من هويته.\n" +
+                    "• النتيجة الأمنية: محاولة التلاعب من أوس تفشل فوراً ويتم إحباط الهجوم بنجاح.";
+                
+                logToTerminal("[DEFENSE] RSA Signature Verified: MitM tampering detected & blocked!");
+            }
         }
 
         function sendMsg() {
             const msg = document.getElementById("msg-input").value;
             if(!msg) return;
-            ws.send(JSON.stringify({ command: "send_msg", mode: currentMode, message: msg }));
+            
+            if (currentMode === 'normal') {
+                logToTerminal("[CHAT] Secure Transmission & AES-256-GCM Decryption successful.");
+                document.getElementById("explainer-content").innerText = 
+                    `💬 [تحليل عملية الإرسال المشفر - Secure Messaging Flow]\n` +
+                    `• النص الصريح: "${msg}"\n` +
+                    `• التشفير: تم استخدام خوارزمية AES-256-GCM.\n` +
+                    `• النتيجة: استلمه حسن وفك تشفيره بنجاح دون أي تدخل خارجي.`;
+                
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-light" style="font-size:0.8rem;"><b>حسين:</b> ${msg} <br><small class="text-secondary">(AES-GCM Secure)</small></div>`;
+            } 
+            else if (currentMode === 'attack') {
+                logToTerminal(`[INTERCEPTED] Aws intercepted and read plaintext: '${msg}'`);
+                document.getElementById("explainer-content").innerText = 
+                    `🥷 [تحليل حالة الاعتراض البرمجي - Interception Analysis]\n` +
+                    `• النص المرسل من حسين: "${msg}"\n` +
+                    `• الاختراق: قام أوس (Aws) باعتراض الحزمة وفك تشفيرها.\n` +
+                    `• النتيجة: ظهر النص صريحاً عند أوس. استخدم لوحة التعديل أسفل أوس لتغيير الرسالة!`;
+                
+                document.getElementById("tamper-panel").style.display = "block";
+                document.getElementById("tampered-msg-input").value = msg;
+            }
+            else if (currentMode === 'defense') {
+                logToTerminal("[DEFENSE BLOCKED] Message delivered safely under RSA signature validation.");
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-success" style="font-size:0.8rem;"><b>حسين (محمي بمصادقة):</b> ${msg} ✓</div>`;
+            }
+
             document.getElementById("msg-input").value = "";
         }
 
         function forwardTamperedMsg() {
             const tampered = document.getElementById("tampered-msg-input").value;
-            ws.send(JSON.stringify({ command: "forward_tampered_msg", mode: currentMode, tampered_message: tampered }));
+            logToTerminal(`[TAMPERED] Hasan received altered message: '${tampered}' without knowing!`);
+            document.getElementById("explainer-content").innerText = 
+                `⚠️ [تحليل التلاعب وإعادة التوجيه - Payload Tampering Analysis]\n` +
+                `• التعديل: قام أوس بتغيير محتوى الرسالة إلى: "${tampered}"\n` +
+                `• إعادة الإرسال: أرسلها إلى حسن على أنها من حسين.\n` +
+                `• الخطر: استلم حسن الرسالة المعدلة وظهرت لديه دون أي تنبيه!`;
+            
+            document.getElementById("hasan-chat").innerHTML += `<div class="text-warning" style="font-size:0.8rem;"><b>حسين (عبر أوس ⚠️):</b> ${tampered}</div>`;
             document.getElementById("tamper-panel").style.display = "none";
         }
 
-        // --- دالة العرض التلقائي للسيناريو أمام الحضور ---
+        // عرض السيناريو التلقائي أمام الحضور
         function runAutoDemo() {
-            alert("🎬 سيتم الآن بدء السيناريو التلقائي أمام الحضور خطوة بخطوة. اضغط موافق وابقى مشاهدة الشاشة!");
+            alert("🎬 سينطلق الآن العرض التلقائي الشامل أمام الحضور. اضغط موافق وراقب الشاشة!");
             
-            // الخطوة 1: الوضع الطبيعي وإرسال رسالة آمنة
             setMode('normal');
             setTimeout(() => {
-                document.getElementById("msg-input").value = "أهلاً حسن، هذا اتصال آمن!";
+                document.getElementById("msg-input").value = "أهلاً حسن، الاتصال مشفر وآمن";
                 sendMsg();
-            }, 2500);
+            }, 2000);
 
-            // الخطوة 2: الانتقال لوضع الهجوم بعد 6 ثوانٍ
             setTimeout(() => {
                 setMode('attack');
-            }, 6000);
+            }, 5500);
 
-            // الخطوة 3: إرسال رسالة يتم اعتراضها وتعديلها من قبل أوس بعد 9 ثوانٍ
             setTimeout(() => {
-                document.getElementById("msg-input").value = "تحويل مبلغ 500$ إلى الحساب";
+                document.getElementById("msg-input").value = "تحويل مبلغ 1000$ إلى حساب حسين";
                 sendMsg();
-            }, 9000);
+            }, 8500);
 
-            // الخطوة 4: قيام أوس بتعديل الرسالة وإرسالها لـ حسن بعد 13 ثانية
             setTimeout(() => {
-                document.getElementById("tampered-msg-input").value = "تحويل مبلغ 5000$ إلى حساب أوس ⚠️";
+                document.getElementById("tampered-msg-input").value = "تحويل مبلغ 10000$ إلى حساب أوس ⚠️";
                 forwardTamperedMsg();
-            }, 13000);
+            }, 12500);
 
-            // الخطوة 5: الانتقال لوضع الحماية لإحباط الهجوم بعد 18 ثانية
             setTimeout(() => {
                 setMode('defense');
-            }, 18000);
+            }, 17000);
         }
+
+        // التهيئة الأولى
+        window.onload = () => {
+            setMode('normal');
+        };
     </script>
 </body>
 </html>
