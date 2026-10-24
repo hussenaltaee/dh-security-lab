@@ -5,14 +5,16 @@
     <title>Diffie-Hellman Security Lab | المختبر الأمني المتقدم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        /* خلفية الصفحة الأساسية باللون الأسود الداكن */
         body {
-            background-color: #070a13;
-            color: #f8fafc;
+            background-color: #0b0f19;
+            color: #e2e8f0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
             position: relative;
         }
 
+        /* خلفية الأنيميشن السيبراني بلون رصاصي متناسق */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -28,63 +30,80 @@
             z-index: 2;
         }
 
+        /* تصميم البطاقات بزجاج رمادي/رصاصي داكن */
         .glass-card {
-            background: rgba(30, 41, 59, 0.75);
+            background: rgba(17, 24, 39, 0.85);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(51, 65, 85, 0.6);
+            border: 1px solid rgba(75, 85, 99, 0.4);
             border-radius: 12px;
-            color: #fff;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            transition: transform 0.2s ease;
+            color: #f3f4f6;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
         }
         .glass-card:hover {
-            border-color: rgba(99, 102, 241, 0.5);
+            border-color: rgba(156, 163, 175, 0.6);
         }
 
+        /* تيرمينال السجلات بلون أسود فحمي */
         .log-terminal {
-            background-color: rgba(2, 6, 23, 0.9);
-            color: #22c55e;
+            background-color: #030712;
+            color: #38bdf8;
             font-family: 'Courier New', Courier, monospace;
             height: 140px;
             overflow-y: auto;
             padding: 12px;
             border-radius: 8px;
             font-size: 0.85rem;
-            border: 1px solid #1e293b;
+            border: 1px solid #1f2937;
         }
 
+        /* صندوق الشرح الفوري */
         .explainer-box {
-            background: rgba(15, 23, 42, 0.85);
-            border: 1px solid #6366f1;
+            background: #0f172a;
+            border: 1px solid #475569;
             border-radius: 8px;
             padding: 14px;
             min-height: 110px;
             font-size: 0.95rem;
             white-space: pre-line;
-            color: #e0e7ff;
-            box-shadow: inset 0 0 15px rgba(99, 102, 241, 0.1);
+            color: #cbd5e1;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4);
         }
 
         .chat-box {
-            background-color: rgba(15, 23, 42, 0.9);
+            background-color: #030712;
             border-radius: 8px;
             padding: 10px;
             height: 100px;
             overflow-y: auto;
             font-size: 0.85rem;
-            border: 1px solid #334155;
+            border: 1px solid #1f2937;
         }
 
         .bilingual {
             font-size: 0.75rem;
-            color: #94a3b8;
+            color: #9ca3af;
             display: block;
         }
 
-        .btn-custom {
+        /* أزرار مخصصة بدرجات الرصاصي والفحمي */
+        .btn-slate-custom {
+            background-color: #1f2937;
+            color: #f3f4f6;
+            border: 1px solid #4b5563;
             font-weight: 600;
             border-radius: 8px;
             transition: all 0.2s;
+        }
+        .btn-slate-custom:hover {
+            background-color: #374151;
+            color: #ffffff;
+            border-color: #9ca3af;
+        }
+
+        .btn-active-mode {
+            background-color: #4b5563 !important;
+            border-color: #e5e7eb !important;
         }
     </style>
 </head>
@@ -93,18 +112,19 @@
     <canvas id="bg-canvas"></canvas>
 
     <div class="container">
+        <!-- العنوان الرئيسي -->
         <div class="text-center mb-4">
-            <h2 class="text-warning fw-bold">🧪 المختبر التفاعلي لأمن وتشفير ديفي-هلمان</h2>
-            <p class="text-muted small">Diffie-Hellman Key Exchange, MitM Attack & PQC Defense Simulation Lab</p>
+            <h2 class="text-light fw-bold">🧪 المختبر التفاعلي لأمن وتشفير ديفي-هلمان</h2>
+            <p class="text-secondary small">Diffie-Hellman Key Exchange, MitM Attack & PQC Defense Simulation Lab</p>
         </div>
         
-        <!-- أزرار الأوضاع -->
+        <!-- أزرار الأوضاع بتصميم رصاصي متناسق -->
         <div class="row mb-3">
             <div class="col text-center">
-                <button onclick="setMode('normal')" class="btn btn-success btn-custom me-1 mb-2 px-3 py-2">🟢 الوضع الطبيعي <br><small class="d-block" style="font-size:0.7rem">Normal ECDH</small></button>
-                <button onclick="setMode('attack')" class="btn btn-danger btn-custom me-1 mb-2 px-3 py-2">🔴 وضع الهجوم <br><small class="d-block" style="font-size:0.7rem">MitM Attack</small></button>
-                <button onclick="setMode('defense')" class="btn btn-primary btn-custom me-1 mb-2 px-3 py-2">🛡️ وضع الحماية <br><small class="d-block" style="font-size:0.7rem">RSA Defense</small></button>
-                <button onclick="setMode('pq_hybrid')" class="btn btn-warning btn-custom mb-2 px-3 py-2 text-dark">⚛️ الوضع الكمومي <br><small class="d-block" style="font-size:0.7rem">Post-Quantum</small></button>
+                <button onclick="setMode('normal')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🟢 الوضع الطبيعي <br><small class="d-block text-secondary" style="font-size:0.7rem">Normal ECDH</small></button>
+                <button onclick="setMode('attack')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🔴 وضع الهجوم <br><small class="d-block text-secondary" style="font-size:0.7rem">MitM Attack</small></button>
+                <button onclick="setMode('defense')" class="btn btn-slate-custom me-1 mb-2 px-3 py-2">🛡️ وضع الحماية <br><small class="d-block text-secondary" style="font-size:0.7rem">RSA Defense</small></button>
+                <button onclick="setMode('pq_hybrid')" class="btn btn-slate-custom mb-2 px-3 py-2">⚛️ الوضع الكمومي <br><small class="d-block text-secondary" style="font-size:0.7rem">Post-Quantum</small></button>
             </div>
         </div>
 
@@ -112,7 +132,7 @@
         <div class="row mb-3">
             <div class="col">
                 <div class="glass-card shadow p-3">
-                    <div class="fw-bold text-info mb-2" style="font-size: 0.9rem;">
+                    <div class="fw-bold text-light mb-2" style="font-size: 0.9rem;">
                         📖 الشرح والتحليل الفوري للعملية (Live Step-by-Step Explainer):
                     </div>
                     <div class="explainer-box" id="explainer-content">
@@ -124,36 +144,36 @@
 
         <!-- أجهزة الشبكة (حسين، أوس، حسن) -->
         <div class="row text-center mb-3 g-3">
-            <!-- حسين (بدل Alice) -->
+            <!-- حسين -->
             <div class="col-md-4">
                 <div class="glass-card p-3 h-100">
-                    <h5 class="text-white">🟢 حسين <span class="bilingual">(المرسل / Hussain)</span></h5>
-                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="hussain-secret">-</span></span>
+                    <h5 class="text-light">🟢 حسين <span class="bilingual">(المرسل / Hussain)</span></h5>
+                    <span class="badge bg-secondary mb-2 text-light fw-bold">Key: <span id="hussain-secret">-</span></span>
                     <div class="input-group mt-2">
-                        <input type="text" id="msg-input" class="form-control form-control-sm bg-dark text-light border-secondary" placeholder="اكتب رسالة...">
-                        <button onclick="sendMsg()" class="btn btn-success btn-sm">إرسال 🚀</button>
+                        <input type="text" id="msg-input" class="form-control form-control-sm bg-black text-light border-secondary" placeholder="اكتب رسالة...">
+                        <button onclick="sendMsg()" class="btn btn-outline-light btn-sm">إرسال 🚀</button>
                     </div>
                 </div>
             </div>
 
-            <!-- أوس (بدل Eve) -->
+            <!-- أوس -->
             <div class="col-md-4">
-                <div class="glass-card p-3 h-100 border-danger">
-                    <h5 class="text-danger">🥷 أوس <span class="bilingual">(المخترق / Aws)</span></h5>
-                    <span class="badge bg-danger mb-2">Aws Key: <span id="aws-secret">-</span></span>
+                <div class="glass-card p-3 h-100" style="border-color: #6b7280;">
+                    <h5 class="text-warning">🥷 أوس <span class="bilingual">(المخترق / Aws)</span></h5>
+                    <span class="badge bg-dark border border-secondary mb-2 text-warning">Aws Key: <span id="aws-secret">-</span></span>
                     <div id="tamper-panel" style="display:none;" class="mt-1 text-start">
-                        <small class="text-warning" style="font-size: 0.75rem;">النص المعترض (Intercepted):</small>
-                        <input type="text" id="tampered-msg-input" class="form-control form-control-sm bg-dark text-warning border-danger mb-1" value="">
-                        <button onclick="forwardTamperedMsg()" class="btn btn-warning btn-sm w-100 fw-bold text-dark" style="font-size: 0.75rem;">تعديل وإرسال لـ حسن ⚠️</button>
+                        <small class="text-secondary" style="font-size: 0.75rem;">النص المعترض (Intercepted):</small>
+                        <input type="text" id="tampered-msg-input" class="form-control form-control-sm bg-black text-warning border-secondary mb-1" value="">
+                        <button onclick="forwardTamperedMsg()" class="btn btn-secondary btn-sm w-100 fw-bold text-dark" style="font-size: 0.75rem;">تعديل وإرسال لـ حسن ⚠️</button>
                     </div>
                 </div>
             </div>
 
-            <!-- حسن (بدل Bob) -->
+            <!-- حسن -->
             <div class="col-md-4">
                 <div class="glass-card p-3 h-100">
-                    <h5 class="text-white">🔵 حسن <span class="bilingual">(المستقبل / Hasan)</span></h5>
-                    <span class="badge bg-info mb-2 text-dark fw-bold">Key: <span id="hasan-secret">-</span></span>
+                    <h5 class="text-light">🔵 حسن <span class="bilingual">(المستقبل / Hasan)</span></h5>
+                    <span class="badge bg-secondary mb-2 text-light fw-bold">Key: <span id="hasan-secret">-</span></span>
                     <div class="chat-box text-start mt-2" id="hasan-chat">
                         <i class="text-muted" style="font-size: 0.8rem;">الرسائل المستلمة هنا...</i>
                     </div>
@@ -166,13 +186,14 @@
             <div class="col">
                 <div class="glass-card p-3">
                     <h6 class="text-light mb-2" style="font-size: 0.9rem;">📊 سجل أحداث الشبكة والتشفير (Terminal Logs):</h6>
-                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Names updated to Hussain, Hasan & Aws. Ready...</div>
+                    <div class="log-terminal" id="terminal-log">> [SYSTEM] Black & Slate theme loaded. Ready...</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // خلفية أنيميشن الجسيمات بدرجات رصاصية وفحمية متناسقة
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -191,8 +212,8 @@
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.size = Math.random() * 1.5 + 0.5;
-                this.speedX = (Math.random() - 0.5) * 0.6;
-                this.speedY = (Math.random() - 0.5) * 0.6;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
             }
             update() {
                 this.x += this.speedX;
@@ -203,8 +224,8 @@
                 if (this.y < 0) this.y = canvas.height;
             }
             draw() {
-                ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
-                ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+                ctx.fillStyle = 'rgba(156, 163, 175, 0.3)';
+                ctx.strokeStyle = 'rgba(107, 114, 128, 0.1)';
                 ctx.lineWidth = 0.5;
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
@@ -268,12 +289,12 @@
             if (data.aws_intercept_hussain) document.getElementById("aws-secret").innerText = data.aws_intercept_hussain.substring(0, 10) + "...";
 
             if (data.type === "chat_result") {
-                document.getElementById("hasan-chat").innerHTML += `<div class="text-success" style="font-size:0.8rem;"><b>حسين:</b> ${data.decrypted_hasan} <br><small class="text-muted">(AES-GCM)</small></div>`;
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-light" style="font-size:0.8rem;"><b>حسين:</b> ${data.decrypted_hasan} <br><small class="text-secondary">(AES-GCM)</small></div>`;
             } else if (data.type === "chat_intercepted") {
                 document.getElementById("tamper-panel").style.display = "block";
                 document.getElementById("tampered-msg-input").value = data.intercepted_by_aws;
             } else if (data.type === "chat_tampered_result") {
-                document.getElementById("hasan-chat").innerHTML += `<div class="text-danger" style="font-size:0.8rem;"><b>حسين (عبر أوس ⚠️):</b> ${data.decrypted_hasan}</div>`;
+                document.getElementById("hasan-chat").innerHTML += `<div class="text-warning" style="font-size:0.8rem;"><b>حسين (عبر أوس ⚠️):</b> ${data.decrypted_hasan}</div>`;
             }
         };
 
